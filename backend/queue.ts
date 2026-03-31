@@ -4,11 +4,11 @@ import dotenv from "dotenv"
 dotenv.config() 
 
 if (!process.env.REDIS) throw new Error("Missing REDIS")
-if (!process.env.TOKEN) throw new Error("Missing TOKEN")
+if (!process.env.REDIS_TOKEN) throw new Error("Missing TOKEN")
 
 export const redisConnection = {
   host: process.env.REDIS,
-  password: process.env.TOKEN,
+  password: process.env.REDIS_TOKEN,
   port: 6379,
   tls: {},
 }

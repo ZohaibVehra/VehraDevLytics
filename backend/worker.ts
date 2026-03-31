@@ -1,6 +1,7 @@
 import { Worker, Job} from 'bullmq'
 import dotenv from "dotenv"
 import { redisConnection } from "./queue.js"
+import { dispatchWebhook } from './webhooks/dispatchWebhook.js'
 
 dotenv.config()
 
@@ -10,41 +11,52 @@ interface GitHubWebhookJobData {
   payload?: unknown
 }
 
-const worker = new Worker('github-webhooks',
-    async (job: Job<GitHubWebhookJobData>) => {
-        console.log("starting job: ", job.id)
+const worker = new Worker(
+  "github-webhooks",
+  async (job: Job<GitHubWebhookJobData>) => {
+    console.log("Worker starting job:", job.id)
 
-        const { event, deliveryId } = job.data
+    const { event, deliveryId, payload } = job.data
 
-        if(!event) throw new Error("Missing event in job data")
+    if (!event) throw new Error("Missing event in job data - Worker")
+    if (!deliveryId) throw new Error("Missing deliveryId in job data - Worker")
 
-        console.log("delivery id: ", deliveryId)
-        console.log("event: ", event)
+    console.log("Worker - delivery id:", deliveryId)
+    console.log("Worker - event:", event)
+    console.log("Worker - payload: ", payload);
+    
 
-        if(event === 'push') console.log("push event detected")
-        else console.log("non-push event detected: ", event)
+    await dispatchWebhook({
+      event,
+      deliveryId,
+      payload,
+    })
 
-        return "fini"
-    },
-{
+    return "Worker - fini"
+  },
+  {
     connection: redisConnection,
-    concurrency: 5
+    concurrency: 5,
   }
 )
 
+//Failed job handler
 worker.on("failed", (job, err) => {
   console.error("failed", job?.id, err.message)
 })
 
+//Infrastructure handler
 worker.on("error", (err) => {
   console.error("worker error:", err)
 })
 
+//Graceful shutdown on Ctrl+C
 process.on("SIGINT", async () => {
   await worker.close()
   process.exit(0)
 })
 
+//Graceful shutdown when app terminated by system
 process.on("SIGTERM", async () => {
   await worker.close()
   process.exit(0)

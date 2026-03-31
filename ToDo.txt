@@ -1,0 +1,17 @@
+- All ingestion of webhook events
+- Handling job queue processing of events (eg during install send all repo events to back of queue etc)
+- Create reconciliation job that runs every x (x is events but weighted to bigger events)
+
+At this point all needed data should be stored in db properly at any given point
+
+- Metric creation -> decide metrics, create funcs to evaluate metrics and store in db
+- Figure out when we run the metric creation, I imagine its every x again but also every 24 hrs at minimum? and likely also 7 days on install
+    - set up job queue to take in metric creation job and set dispatch to run func created for it
+
+At this point all metrics are being created automatically at correct times
+ 
+ - Design frontend, I'll leave this nearly empty since itll be more clear later
+    - Allow users to connect to GitHub acc and figure out the repos they should have access to from that
+        - create account for users given GitHub login, they should only be able to login with github no user/pass
+    - get metrics
+    - ? think about custom configs maybe? idk yet if too expensive

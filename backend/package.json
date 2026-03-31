@@ -5,7 +5,14 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "tsx watch server.ts"
+    "dev": "tsx watch server.ts",
+    "db:push": "prisma db push",
+    "db:generate": "prisma generate",
+    "db:studio": "prisma studio",
+    "db:reset": "prisma migrate reset --force",
+    "db:dev": "prisma migrate dev",
+    "db:pull": "prisma db pull",
+    "db:format": "prisma format"
   },
   "repository": {
     "type": "git",
@@ -27,9 +34,11 @@
   },
   "dependencies": {
     "@octokit/app": "^16.1.2",
+    "@prisma/client": "^7.6.0",
     "bullmq": "^5.71.0",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
-    "octokit": "^5.0.5"
+    "octokit": "^5.0.5",
+    "prisma": "^7.6.0"
   }
 }
