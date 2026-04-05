@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
@@ -13,45 +8,214 @@ datasource db {
 }
 
 model Repo {
-  id           String        @id @default(cuid())
-  githubRepoId BigInt        @unique
-  name         String
-  fullName     String        @unique
-  installationId String
+  id              String           @id @default(cuid())
+  githubRepoId    BigInt           @unique
+  name            String
+  fullName        String           @unique
+  installationId  String
+  isReady         Boolean          @default(false)
+  lastSyncedAt    DateTime?
+  weightedEvents  Int              @default(0)
+  syncInProgress  Boolean          @default(false)
 
-  pullRequests PullRequest[]
+  pullRequests    PullRequest[]
+  installation    Installation     @relation(fields: [installationId], references: [id])
+  userAccesses    UserRepoAccess[]
 
-  installation   Installation  @relation(fields: [installationId], references: [id])
+  prMergeTimePoints PrMergeTimePoint[]
+  FirstReviewTimePoint  FirstReviewTimePoint[]
+  reviewTimeBreakdownPoints ReviewTimeBreakdownPoint[]
+  kpi RepoKPI?
 
   @@index([installationId])
+  @@index([isReady])
 }
 
 model PullRequest {
-  id          String   @id @default(cuid())
-  githubPrId  BigInt   @unique
-  title       String
-  repoId      String
-  createdAt   DateTime @default(now())
+  id               String                     @id @default(cuid())
+  githubPrId       BigInt                     @unique
+  title            String
+  repoId           String
+  createdAt        DateTime                   @default(now())
+  mergedAt         DateTime?
+  closedAt         DateTime?
+  isMerged         Boolean                    @default(false)
+  mergeTimeSeconds Int?
+  number           Int
+  authorLogin      String
+  userId           String
+  lastActivityAt   DateTime                   @default(now())
+  commentCount     Int                        @default(0)
 
-  userId      String
-  user        User     @relation(fields: [userId], references: [id])
-
-  repo        Repo     @relation(fields: [repoId], references: [id])
+  user             User                       @relation(fields: [userId], references: [id])
+  repo             Repo                       @relation(fields: [repoId], references: [id])
+  issueComments    IssueComment[]
+  reviews          PullRequestReview[]
+  reviewComments   PullRequestReviewComment[]
 
   @@index([repoId])
   @@index([createdAt])
   @@index([userId])
+  @@index([repoId, createdAt])
 }
 
 model Installation {
-  id String @id
+  id    String @id
   repos Repo[]
 }
 
 model User {
-  id        String   @id @default(cuid())
-  githubId  BigInt   @unique
-  login     String
+  id                        String                     @id @default(cuid())
+  githubId                  BigInt                     @unique
+  login                     String                     @unique
+  lastRepoAccessSyncAt      DateTime?
 
-  pullRequests PullRequest[]
+  issueComments             IssueComment[]
+  pullRequests              PullRequest[]
+  pullRequestReviews        PullRequestReview[]
+  pullRequestReviewComments PullRequestReviewComment[]
+  repoAccesses              UserRepoAccess[]
+}
+
+model PullRequestReview {
+  id             String                     @id @default(cuid())
+  githubReviewId BigInt                     @unique
+  prId           String
+  reviewerId     String
+  reviewerLogin  String
+  state          ReviewState
+  submittedAt    DateTime?
+  createdAt      DateTime                   @default(now())
+
+  pr             PullRequest                @relation(fields: [prId], references: [id], onDelete: Cascade)
+  reviewer       User                       @relation(fields: [reviewerId], references: [id])
+  comments       PullRequestReviewComment[]
+
+  @@index([prId])
+  @@index([reviewerId])
+}
+
+model PullRequestReviewComment {
+  id              String            @id @default(cuid())
+  githubCommentId BigInt            @unique
+  prId            String
+  reviewId        String
+  commenterLogin  String
+  createdAt       DateTime          @default(now())
+  commenterId     String
+
+  pr              PullRequest       @relation(fields: [prId], references: [id], onDelete: Cascade)
+  review          PullRequestReview @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  commenter       User              @relation(fields: [commenterId], references: [id])
+
+  @@index([prId])
+  @@index([reviewId])
+  @@index([commenterId])
+}
+
+enum ReviewState {
+  APPROVED
+  CHANGES_REQUESTED
+  COMMENTED
+  DISMISSED
+}
+
+model IssueComment {
+  id              String      @id @default(cuid())
+  githubCommentId BigInt      @unique
+  prId            String
+  commenterId     String
+  commenterLogin  String
+  createdAt       DateTime    @default(now())
+
+  pr              PullRequest @relation(fields: [prId], references: [id], onDelete: Cascade)
+  commenter       User        @relation(fields: [commenterId], references: [id])
+
+  @@index([prId])
+  @@index([commenterId])
+  @@index([prId, createdAt])
+}
+
+model UserRepoAccess {
+  id     String @id @default(cuid())
+  userId String
+  repoId String
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  repo   Repo   @relation(fields: [repoId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, repoId])
+  @@index([userId])
+  @@index([repoId])
+}
+
+
+model PrMergeTimePoint {
+  id            String   @id @default(cuid())
+  repoId        String
+  dateTime      DateTime
+  avgMergeHours Float
+
+  repo          Repo     @relation(fields: [repoId], references: [id], onDelete: Cascade)
+
+  @@index([repoId])
+  @@unique([repoId, dateTime])
+}
+
+model FirstReviewTimePoint {
+  id                  String   @id @default(cuid())
+  repoId              String
+  dateTime            DateTime
+  avgFirstReviewHours Float
+
+  repo                Repo     @relation(fields: [repoId], references: [id], onDelete: Cascade)
+
+  @@index([repoId])
+  @@unique([repoId, dateTime])
+}
+
+model ReviewTimeBreakdownPoint {
+  id            String   @id @default(cuid())
+  repoId        String
+  dateTime      DateTime
+
+  under8Hours   Int      @default(0)
+  under24Hours  Int      @default(0)
+  under3Days    Int      @default(0)
+  over3Days     Int      @default(0)
+
+  repo          Repo     @relation(fields: [repoId], references: [id], onDelete: Cascade)
+
+  @@index([repoId])
+  @@unique([repoId, dateTime])
+}
+
+model RepoKPI {
+  id String @id @default(cuid())
+
+  repoId String @unique
+  repo   Repo   @relation(fields: [repoId], references: [id], onDelete: Cascade)
+
+  medianPrMergeTime7d              Float?
+  medianPrMergeTime28d             Float?
+  medianPrMergeTime84d             Float?
+
+  medianTimeToFirstReview7d        Float?
+  medianTimeToFirstReview28d       Float?
+  medianTimeToFirstReview84d       Float?
+
+  percentReviewedWithin24Hours7d   Float?
+  percentReviewedWithin24Hours28d  Float?
+  percentReviewedWithin24Hours84d  Float?
+
+  prsWaitingForFirstReview7d       Int    @default(0)
+  prsWaitingForFirstReview28d      Int    @default(0)
+  prsWaitingForFirstReview84d      Int    @default(0)
+
+  stalePrRate7d                    Float?
+  stalePrRate28d                   Float?
+  stalePrRate84d                   Float?
+
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
 }

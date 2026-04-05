@@ -2,10 +2,17 @@ import express from "express"
 import dotenv from "dotenv"
 import crypto from "crypto"
 import { myQueue } from "./queue.js"
-
+import authRoutes from "./auth/authRoutes.js"
+import cors from "cors"
+import repoRoutes from "./repoRoutes.js"
+import metricsRouter from "./metrics/metricRouter.js"
 dotenv.config()
 
 const app = express()
+app.use(cors({
+  origin: "http://localhost:5173",
+  credentials: true,
+}))
 
 interface GitHubWebhookJobData {
   event?: string
@@ -89,6 +96,14 @@ app.post("/webhook", async (req: express.Request & { rawBody?: Buffer }, res) =>
     res.sendStatus(500)
   }
 })
+
+
+
+//from frontend
+app.use("/auth", authRoutes)
+app.use("/repos", repoRoutes)
+app.use("/metrics", metricsRouter)
+
 
 app.listen(3000, () => {
   console.log("listening on 3000")

@@ -3,14 +3,14 @@ import dotenv from "dotenv"
 
 dotenv.config() 
 
+/* FOR UPSTASH
 if (!process.env.REDIS) throw new Error("Missing REDIS")
 if (!process.env.REDIS_TOKEN) throw new Error("Missing TOKEN")
+*/
 
 export const redisConnection = {
-  host: process.env.REDIS,
-  password: process.env.REDIS_TOKEN,
-  port: 6379,
-  tls: {},
+  host: process.env.REDIS_HOST || "127.0.0.1",
+  port: Number(process.env.REDIS_PORT) || 6379,
 }
 
 export const myQueue = new Queue('github-webhooks', {

@@ -16,6 +16,15 @@ const worker = new Worker(
   async (job: Job<GitHubWebhookJobData>) => {
     console.log("Worker starting job:", job.id)
 
+    if (job.name === "createMetrics") {
+      await dispatchWebhook({
+        event: "createMetrics",
+        deliveryId: String(job.id ?? "manual"),
+        payload: job.data,
+      })
+      return
+    }
+
     const { event, deliveryId, payload } = job.data
 
     if (!event) throw new Error("Missing event in job data - Worker")
