@@ -7,13 +7,19 @@ interface KPICardProps {
 export default function KPICard({
   title,
   value,
-  suffix = "",
 }: KPICardProps) {
+  const formattedValue =
+  value === null
+    ? "N/A"
+    : value < 1
+    ? `${Math.round(value * 60)} min`
+    : `${Number.isInteger(value) ? value : value.toFixed(2)} h`
+
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm min-w-[220px]">
-      <div className="text-sm text-gray-500">{title}</div>
-      <div className="mt-2 text-2xl font-semibold text-gray-900">
-        {value === null ? "N/A" : `${value}${suffix}`}
+    <div className="rounded-2xl border border-white/10 from-white/[0.08] to-white/[0.04] p-5 backdrop-blur-sm min-w-[220px]">
+      <div className="text-sm text-gray-400">{title}</div>
+      <div className="mt-3 text-5xl font-semibold tracking-tight text-white">
+        {formattedValue}
       </div>
     </div>
   )

@@ -84,20 +84,17 @@ export default function PrMergeTimeTrendChart({
   selectedDays,
 }: PrMergeTimeTrendChartProps) {
 
-  console.log('prMergeDataArr input is ',prMergeDataArr);
     
   const chartData = buildFullDateSeries(prMergeDataArr, selectedDays)
-  console.log('chartData after buildFullDateSeries is ', chartData);
-
-    
-
+  
+  
   return (
     <ResponsiveContainer width="100%" height={300}>
       <LineChart
         data={chartData}
         margin={{ top: 20, right: 20, left: 0, bottom: 10 }}
       >
-        <CartesianGrid strokeDasharray="3 3" />
+        <CartesianGrid  stroke="rgba(255,255,255,0.06)" strokeDasharray="3 3"/>
 
         <XAxis
           dataKey="timestamp"
@@ -106,34 +103,47 @@ export default function PrMergeTimeTrendChart({
           domain={["dataMin", "dataMax"]}
           tickFormatter={formatDateLabel}
           ticks={chartData.map((item) => item.timestamp)}
+          stroke="rgba(255,255,255,0.4)"
+          tick={{ fill: "rgba(255,255,255,0.6)", fontSize: 12 }}
         />
 
         <YAxis
           dataKey="avgMergeHours"
           domain={[0, "auto"]}
           tickFormatter={(value) => `${value}h`}
+          stroke="rgba(255,255,255,0.4)"
+          tick={{ fill: "rgba(255,255,255,0.6)", fontSize: 12 }}
         />
 
         <Tooltip
           labelFormatter={(value) => formatDateLabel(Number(value))}
           formatter={(value) => {
-            if (value == null) {
-              return ["No data", "Avg Merge Time"]
+            if (value == null) return ["No data", "Avg Merge Time"]
+            if (typeof value !== "number") return [String(value), "Avg Merge Time"]
+            if (value < 1) {
+              const minutes = value * 60
+              return [`${Math.round(minutes)}m`, "Avg Merge Time"]
             }
 
-            if (typeof value !== "number") {
-              return [String(value), "Avg Merge Time"]
-            }
-
-            return [`${value.toFixed(1)}h`, "Avg Merge Time"]
+            return [`${value.toFixed(2)}h`, "Avg Merge Time"]
           }}
+          contentStyle={{
+            backgroundColor: "#0b0b12",
+            border: "1px solid rgba(255,255,255,0.1)",
+            borderRadius: "8px",
+          }}
+          labelStyle={{ color: "#aaa" }}
+          itemStyle={{ color: "#fff" }}
+          cursor={{ stroke: "rgba(255,255,255,0.15)", strokeWidth: 1 }}
         />
 
         <Line
           type="linear"
           dataKey="avgMergeHours"
-          stroke="#8884d8"
-          dot={false}
+          stroke="#8b5cf6"
+          strokeWidth={2}
+          dot={{ r: 2, strokeWidth: 0, fill: "#8b5cf6" }}
+          activeDot={{ r: 4 }}
           connectNulls
         />
       </LineChart>

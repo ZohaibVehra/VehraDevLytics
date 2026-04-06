@@ -10,26 +10,31 @@ export default function SelectRepoDropdown({repos, selectedRepoId, onSelect}: Pr
     
     //tell user no repos available if none available
     if (repos.length === 0) {
-    return (
-      <div className="text-gray-500 text-sm">
-        No repos available
-      </div>
-    )
-  }
+      return (
+        <div className="mb-4">
+          <select
+            disabled
+            className="h-12 min-w-[230px] rounded-lg border border-white/10 bg-white/[0.04] px-5 pr-10 text-base text-gray-400 cursor-not-allowed"
+          >
+            <option>No repositories available</option>
+          </select>
+        </div>
+      )
+    }
 
   return (
     <div className="mb-4">
       <select
         value={selectedRepoId}
         onChange={(e) => onSelect?.(e.target.value)}
-        className="w-full max-w-md p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-black"
+        className="h-12 min-w-[230px] rounded-lg border border-white/15 bg-white/5 px-5 pr-10 text-base text-white outline-none transition hover:bg-white/[0.07] focus:border-violet-400/70 focus:bg-white/[0.07]"
       >
-        <option key="default" value="" disabled>
+        <option className="bg-[#0b0b12] text-white" key="default" value="" disabled>
           Select a repository
         </option>
 
         {repos.map((repo) => (
-          <option key={repo.id} value={repo.id}>
+          <option className="bg-[#0b0b12] text-white" key={repo.id} value={repo.id}>
             {repo.fullName}
           </option>
         ))}

@@ -83,10 +83,10 @@ export default function ReviewSpeedTrendChart({
   reviewSpeedDataArr,
   selectedDays,
 }: ReviewSpeedTrendChartProps) {
-  console.log("reviewSpeedDataArr input is ", reviewSpeedDataArr)
-
   const chartData = buildFullDateSeries(reviewSpeedDataArr, selectedDays)
-  console.log("chartData after buildFullDateSeries is ", chartData)
+
+  console.log('fin chart data', chartData);
+  
 
   return (
     <ResponsiveContainer width="100%" height={300}>
@@ -94,7 +94,10 @@ export default function ReviewSpeedTrendChart({
         data={chartData}
         margin={{ top: 20, right: 20, left: 0, bottom: 10 }}
       >
-        <CartesianGrid strokeDasharray="3 3" />
+        <CartesianGrid
+          stroke="rgba(255,255,255,0.06)"
+          strokeDasharray="3 3"
+        />
 
         <XAxis
           dataKey="timestamp"
@@ -103,12 +106,16 @@ export default function ReviewSpeedTrendChart({
           domain={["dataMin", "dataMax"]}
           tickFormatter={formatDateLabel}
           ticks={chartData.map((item) => item.timestamp)}
+          stroke="rgba(255,255,255,0.4)"
+          tick={{ fill: "rgba(255,255,255,0.6)", fontSize: 12 }}
         />
 
         <YAxis
           dataKey="avgFirstReviewHours"
           domain={[0, "auto"]}
           tickFormatter={(value) => `${value}h`}
+          stroke="rgba(255,255,255,0.4)"
+          tick={{ fill: "rgba(255,255,255,0.6)", fontSize: 12 }}
         />
 
         <Tooltip
@@ -122,15 +129,30 @@ export default function ReviewSpeedTrendChart({
               return [String(value), "Avg First Review Time"]
             }
 
-            return [`${value.toFixed(1)}h`, "Avg First Review Time"]
+            if (value < 1) {
+              const minutes = value * 60
+              return [`${Math.round(minutes)}m`, "Avg First Review Time"]
+            }
+
+            return [`${value.toFixed(2)}h`, "Avg First Review Time"]
           }}
+          contentStyle={{
+            backgroundColor: "#0b0b12",
+            border: "1px solid rgba(255,255,255,0.1)",
+            borderRadius: "8px",
+          }}
+          labelStyle={{ color: "#aaa" }}
+          itemStyle={{ color: "#fff" }}
+          cursor={{ stroke: "rgba(255,255,255,0.15)", strokeWidth: 1 }}
         />
 
         <Line
           type="linear"
           dataKey="avgFirstReviewHours"
-          stroke="#82ca9d"
-          dot={false}
+          stroke="#8b5cf6"
+          strokeWidth={2}
+          dot={{ r: 2, strokeWidth: 0, fill: "#8b5cf6" }}
+          activeDot={{ r: 4 }}
           connectNulls
         />
       </LineChart>

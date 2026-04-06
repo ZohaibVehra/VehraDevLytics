@@ -18,10 +18,10 @@ export default function SelectWindowDropdown({
       <select
         value={selectedRange}
         onChange={(e) => onSelect(Number(e.target.value))}
-        className="w-full max-w-xs p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-black"
+        className="h-12 min-w-[180px] rounded-lg border border-white/15 bg-white/5 px-5 pr-10 text-base text-white outline-none transition hover:bg-white/[0.07] focus:border-violet-400/70 focus:bg-white/[0.07]"
       >
         {options.map((opt) => (
-          <option key={opt.value} value={opt.value}>
+          <option className="bg-[#0b0b12] text-white" key={opt.value} value={opt.value}>
             {opt.label}
           </option>
         ))}

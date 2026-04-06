@@ -9,11 +9,20 @@ import { userHasRepoAccess } from "./userHasRepoAccess.js"
 
 const router = express.Router()
 
+//redirect to OAuth login
 router.get("/github", (req, res) => {
   const clientId = process.env.GITHUB_OAUTH_ID
 
   const redirectUrl =
     `https://github.com/login/oauth/authorize?client_id=${clientId}&prompt=select_account`
+
+  res.redirect(redirectUrl)
+})
+
+//redirect to github app install
+router.get("/github/install", (req, res) => {
+  const redirectUrl =
+    "https://github.com/apps/vehradevlytics/installations/new"
 
   res.redirect(redirectUrl)
 })
