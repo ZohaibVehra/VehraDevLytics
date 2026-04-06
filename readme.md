@@ -123,4 +123,4 @@ If Redis or PostgreSQL are not running, the backend will fail or jobs will not p
 3. Click "Login with GitHub"  
 4. Select a repository  
 5. Click Create Repo Metrics button at the bottom of page (local design only)
-5. Generate and view metrics
+5. As metrics are updated after a certain number of events, if you want to view recent event included metrics quickly click 'Create Repo Metrics' button at the bottom of the dashboard

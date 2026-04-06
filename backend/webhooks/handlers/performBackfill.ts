@@ -1,4 +1,5 @@
 import { prisma } from "../../prismaClient.js"
+import { myQueue } from "../../queue.js"
 import { getInstallationOctokit } from "./helper/getInstallationToken.js"
 import { fetchRecentPullRequestsPage } from "./helper/fetchRecentPullRequests.js"
 import { hydratePullRequestActivity } from "./helper/hydratePullRequestActivity.js"
@@ -341,12 +342,30 @@ export async function performBackfill({
       },
     })
 
+    try {
+      await myQueue.add(
+        "github-webhook",
+        {
+          event: "createMetrics",
+          deliveryId: `initial-metrics:${dbRepo.id}`,
+          payload: {
+            repoId: dbRepo.id,
+            source: "initialBackfill",
+          },
+        },
+        {
+          jobId: `createMetrics:initial:${dbRepo.id}`,
+        }
+      )
+    } catch (error) {
+      console.log("performBackfill - failed to queue metrics for repo:", dbRepo.fullName)
+      console.log(error)
+    }
+
     console.log("performBackfill - completed for:", dbRepo.fullName)
   } catch (error) {
     console.log("performBackfill - failed for repo:", dbRepo.fullName)
     console.log(error)
-
-    //get metrics zzz
 
     await prisma.repo.update({
       where: {
