@@ -71,7 +71,7 @@ Expected output:
 
 
 ### 5. Create environment variables
-create a .env file in the backend folder or rename the sampleenv file to .env
+create a .env file in the backend folder or rename the sampleEnv file to .env
 For demo purposes relevant credentials will be provided separately.
 Provide database url for DATABASE_URL, example DATABASE_URL="postgresql://postgres:postgres@localhost:5432/DevLytics?schema=public"
 
